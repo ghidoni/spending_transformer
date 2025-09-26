@@ -14,7 +14,9 @@ nuformer_replication/
 ├── data_preprocessor.py      # Implements the transaction-to-token conversion logic
 ├── model.py                  # Contains all PyTorch model definitions (Transformer, DCNv2, nuFormer)
 ├── pretrain.py               # Script for the self-supervised pre-training phase
-└── finetune.py               # Script for the supervised finetuning and joint fusion phase
+├── finetune.py               # Script for the supervised finetuning and joint fusion phase
+├── finetune_v2.py            # Simplified finetuning using only transaction sequences
+└── predict.py                # Script to predict next tokens using the pre-trained model
 ```
 
 ## Methodology Overview
@@ -66,9 +68,31 @@ This will save the trained tokenizer and the model weights to the `nuformer_mode
 
 ### 4. Finetune the Model
 
-Run the finetuning script to adapt the pre-trained model to the downstream classification task. The script is configured to run the "Joint Fusion" `nuFormer` model by default.
+You have two options for finetuning.
+
+#### Option A: Joint Fusion (nuFormer)
+
+Run the main finetuning script to adapt the pre-trained model using both sequence and tabular data. This script runs the "Joint Fusion" `nuFormer` model by default.
 
 ```bash
 python finetune.py
 ```
 This will load the pre-trained weights, combine the Transformer with the DCNv2 for tabular data, and train the end-to-end model, saving the final artifacts in the `nuformer_model/` directory.
+
+#### Option B: Sequence-Only Finetuning
+
+Run the `finetune_v2.py` script for a simplified approach that finetunes the transformer using only the transaction sequences for the downstream task.
+
+```bash
+python finetune_v2.py
+```
+This will save the final model to `finetuned_transformer_classifier.pth`.
+
+### 5. Predict with the Pre-trained Model
+
+After pre-training, you can use the `predict.py` script to see the model in action. It loads the pre-trained transformer and uses it to predict the next few tokens in a user's transaction sequence.
+
+```bash
+python predict.py
+```
+This will fetch a few random user sequences and display the model's predictions versus the actual next tokens.
