@@ -22,10 +22,11 @@ def predict_next_tokens(
         device (str): The device to run the model on.
 
     Returns:
-        list[str]: A list of predicted tokens.
+        tuple[list[str], list[int]]: Predicted tokens (strings) and their IDs.
     """
     model.eval()
     predicted_tokens = []
+    predicted_token_ids = []
     current_sequence = input_sequence.copy()
 
     with torch.no_grad():
@@ -47,9 +48,20 @@ def predict_next_tokens(
 
             # Add the predicted token to our list and to the current sequence for the next prediction
             current_sequence.append(predicted_token_id)
+            predicted_token_ids.append(predicted_token_id)
             predicted_tokens.append(tokenizer.tokenizer.id_to_token(predicted_token_id))
 
-    return predicted_tokens
+    return predicted_tokens, predicted_token_ids
+
+
+def tokens_from_ids(tokenizer, token_ids):
+    """Convert a list of token IDs to their string representations."""
+    return [tokenizer.tokenizer.id_to_token(tok_id) for tok_id in token_ids]
+
+
+def format_tokens_with_ids(tokens, token_ids):
+    """Render tokens and IDs side-by-side as `token(id)` strings."""
+    return " ".join(f"{token}({tok_id})" for token, tok_id in zip(tokens, token_ids))
 
 
 def main():
@@ -122,28 +134,42 @@ def main():
         slice_end = len(full_sequence) - num_to_predict
         input_sequence = full_sequence[:slice_end]
         actual_next_tokens_ids = full_sequence[slice_end : slice_end + num_to_predict]
-        actual_next_tokens = [
-            tokenizer.tokenizer.id_to_token(tok_id) for tok_id in actual_next_tokens_ids
-        ]
+        actual_next_tokens = tokens_from_ids(tokenizer, actual_next_tokens_ids)
 
         # Run prediction
-        predicted_tokens = predict_next_tokens(
-            model, tokenizer, input_sequence, num_tokens_to_predict=num_to_predict, device=device
+        predicted_tokens, predicted_token_ids = predict_next_tokens(
+            model,
+            tokenizer,
+            input_sequence,
+            num_tokens_to_predict=num_to_predict,
+            device=device,
         )
 
         # Display results
-        input_tokens_display = [
-            tokenizer.tokenizer.id_to_token(tok_id) for tok_id in input_sequence[-20:]
-        ]
+        input_sequence_ids_tail = input_sequence[-20:]
+        input_tokens_display = tokens_from_ids(tokenizer, input_sequence_ids_tail)
+        input_tokens_with_ids_display = format_tokens_with_ids(
+            input_tokens_display, input_sequence_ids_tail
+        )
+
+        actual_tokens_with_ids = format_tokens_with_ids(
+            actual_next_tokens, actual_next_tokens_ids
+        )
+        predicted_tokens_with_ids = format_tokens_with_ids(
+            predicted_tokens, predicted_token_ids
+        )
 
         print("\n" + "=" * 60)
         print(f"        PREDICTION EXAMPLE {i + 1}/{num_examples}        ")
         print("=" * 60)
         print(f"User sequence file: {sequence_file}")
         print(f"Input sequence (last 20 tokens):\n{' '.join(input_tokens_display)}")
+        print(f"Input sequence with IDs (last 20):\n{input_tokens_with_ids_display}")
         print("-" * 60)
         print(f"ACTUAL next {num_to_predict} tokens:    {' '.join(actual_next_tokens)}")
+        print(f"ACTUAL tokens with IDs:      {actual_tokens_with_ids}")
         print(f"PREDICTED next {num_to_predict} tokens: {' '.join(predicted_tokens)}")
+        print(f"PREDICTED tokens with IDs:   {predicted_tokens_with_ids}")
         print("=" * 60)
 
 
