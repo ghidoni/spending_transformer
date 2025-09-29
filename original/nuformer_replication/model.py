@@ -8,6 +8,17 @@ import math
 # attention implementation `torch.nn.functional.scaled_dot_product_attention`.
 # It automatically uses the most efficient backend available (like FlashAttention)
 # if the hardware and inputs are compatible. We will use this for our implementation.
+#
+# To use the FlashAttention backend, ensure you have:
+# - PyTorch >= 2.0 installed
+# - CUDA >= 11.4 (for GPU support)
+# - A compatible GPU (NVIDIA Ampere or newer recommended)
+#
+# If you want to install the standalone FlashAttention library for more control or older PyTorch:
+# pip install flash-attn
+# See: https://github.com/Dao-AILab/flauvsh-attention
+#
+# For most users, PyTorch's built-in scaled_dot_product_attention will automatically use FlashAttention if available.
 
 
 class CausalSelfAttention(nn.Module):

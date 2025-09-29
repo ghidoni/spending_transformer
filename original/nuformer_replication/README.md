@@ -48,6 +48,8 @@ pip install -r requirements.txt
 ```
 *Note: The use of `FlashAttention` via `torch.nn.functional.scaled_dot_product_attention` is most effective on CUDA-enabled hardware with PyTorch 2.0 or newer.*
 
+*Suggestion: for easier use of `FlashAttention`, install `ninja` via `pip` and the nvidia toolkit for the latest version of the `pytorch` package.*
+
 ### 2. Generate Demo Data
 
 Since the original dataset is not public, a script is provided to generate a dummy dataset that mimics the structure of the real data.

@@ -6,3 +6,5 @@ numpy
 scikit-learn
 lightgbm
 peft
+ninja
+flash-attn
